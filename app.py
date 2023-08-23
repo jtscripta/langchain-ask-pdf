@@ -9,12 +9,17 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.llms import OpenAI
 from langchain.cache import InMemoryCache
 from langchain.callbacks import get_openai_callback
+import os
+
+st.set_page_config(page_title="Ask your PDF")
+
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 langchain.llm_cache = InMemoryCache()
 
 def main():
+    print(st.secrets)
     load_dotenv()
-    st.set_page_config(page_title="Ask your PDF")
     st.header("Ask your PDF 💬")
 
     # upload file
