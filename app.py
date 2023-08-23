@@ -46,13 +46,15 @@ def main():
         knowledge_base = FAISS.from_texts(chunks, embeddings)
 
         # settings
-        model = st.selectbox('Choose the model',
-                              ('gpt-3.5-turbo',
-                               'gpt-3.5-turbo-16k',
+        models_url = "https://platform.openai.com/docs/models"
+        model = st.selectbox('Choose the model ([learn more](%s))' % models_url,
+                              ('gpt-3.5-turbo-16k',
+                               'gpt-3.5-turbo',
                                'text-davinci-003',
                                'gpt-4'))
 
         # show user input
+        st.write(" ")
         user_question = st.text_input("Ask a question about your PDF:")
         if user_question:
             docs = knowledge_base.similarity_search(user_question)
@@ -65,8 +67,13 @@ def main():
                 print(cb)
                 print(response)
 
-            st.write("Model: ", model)
             st.write(response)
+
+            # response detail
+            st.write(" ")
+            st.write(cb)  
+            st.markdown(f"<span style='color: gray; font-size: 11px;'>Model: {model}</span>",
+             unsafe_allow_html=True)
 
 
 if __name__ == '__main__':
