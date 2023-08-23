@@ -17,6 +17,7 @@ os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 langchain.llm_cache = InMemoryCache()
 
+
 def main():
     print(st.secrets)
     load_dotenv()
@@ -34,10 +35,7 @@ def main():
 
         # split into chunks
         text_splitter = CharacterTextSplitter(
-            separator="\n",
-            chunk_size=1000,
-            chunk_overlap=200,
-            length_function=len
+            separator="\n", chunk_size=1000, chunk_overlap=200, length_function=len
         )
         chunks = text_splitter.split_text(text)
 
@@ -46,12 +44,18 @@ def main():
         knowledge_base = FAISS.from_texts(chunks, embeddings)
 
         # settings
-        models_url = "https://platform.openai.com/docs/models"
-        model = st.selectbox('Choose the model ([learn more](%s))' % models_url,
-                              ('gpt-3.5-turbo-16k',
-                               'gpt-3.5-turbo',
-                               'text-davinci-003',
-                               'gpt-4'))
+        col1, col2 = st.columns(2)
+        with col1:
+            models_url = "https://platform.openai.com/docs/models"
+            model = st.selectbox(
+                "Choose the model ([learn more](%s))" % models_url,
+                ("gpt-3.5-turbo-16k", "gpt-3.5-turbo", "text-davinci-003", "gpt-4"),
+            )
+        with col2:
+            temp_url = "https://www.linkedin.com/pulse/temperature-check-guide-best-chatgpt-feature-youre-using-berkowitz"
+            temp = st.text_input(
+                "Temperature (0.1 - 1.0 [learn more](%s))" % temp_url, 0.1
+            )
 
         # show user input
         st.write(" ")
@@ -59,11 +63,10 @@ def main():
         if user_question:
             docs = knowledge_base.similarity_search(user_question)
 
-            llm = OpenAI(temperature=0.1, model_name=model)
+            llm = OpenAI(temperature=float(temp), model_name=model)
             chain = load_qa_chain(llm, chain_type="stuff")
             with get_openai_callback() as cb:
-                response = chain.run(input_documents=docs,
-                                     question=user_question)
+                response = chain.run(input_documents=docs, question=user_question)
                 print(cb)
                 print(response)
 
@@ -71,10 +74,12 @@ def main():
 
             # response detail
             st.write(" ")
-            st.write(cb)  
-            st.markdown(f"<span style='color: gray; font-size: 11px;'>Model: {model}</span>",
-             unsafe_allow_html=True)
+            st.write(cb)
+            st.markdown(
+                f"<span style='color: gray; font-size: 11px;'>Model: {model}</span>",
+                unsafe_allow_html=True,
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
