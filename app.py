@@ -18,7 +18,7 @@ langchain.llm_cache = InMemoryCache()
 models_url = "https://platform.openai.com/docs/models"
 temp_url = "https://www.linkedin.com/pulse/temperature-check-guide-best-chatgpt-feature-youre-using-berkowitz"
 
-
+@st.cache_data
 def extract_text_from_pdf(pdf):
     pdf_reader = PdfReader(pdf)
     text = ""
@@ -26,7 +26,14 @@ def extract_text_from_pdf(pdf):
         text += page.extract_text()
     return text
 
+@st.cache_data
+def split_text(text):
+    text_splitter = CharacterTextSplitter(
+            separator="\n", chunk_size=1000, chunk_overlap=200, length_function=len
+        )
+    return text_splitter.split_text(text)
 
+@st.cache_data
 def create_embeddings(text_chunks):
     embeddings = OpenAIEmbeddings()
     knowledge_base = FAISS.from_texts(text_chunks, embeddings)
@@ -72,10 +79,7 @@ def main():
         text = extract_text_from_pdf(pdf)
 
         # split into chunks
-        text_splitter = CharacterTextSplitter(
-            separator="\n", chunk_size=1000, chunk_overlap=200, length_function=len
-        )
-        chunks = text_splitter.split_text(text)
+        chunks = split_text(text)
 
         print("Embedding to run: ...")
 
