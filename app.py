@@ -64,11 +64,12 @@ def user_input_section(knowledge_base, model, temp):
             with st.chat_message("assistant"):
                 st.write(response)
                 st.write(" ")
-                st.write(cb)
-                st.markdown(
-                    f"<span style='color: gray; font-size: 11px;'>Model: {model}</span>",
-                    unsafe_allow_html=True,
-                )
+                st.caption(cb)
+                st.caption(model)
+                # st.markdown(
+                #     f"<span style='color: gray; font-size: 11px;'>Model: {model}</span>",
+                #     unsafe_allow_html=True,
+                # )
 
 
 def main():
