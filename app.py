@@ -18,6 +18,7 @@ langchain.llm_cache = InMemoryCache()
 models_url = "https://platform.openai.com/docs/models"
 temp_url = "https://www.linkedin.com/pulse/temperature-check-guide-best-chatgpt-feature-youre-using-berkowitz"
 
+
 @st.cache_data
 def extract_text_from_pdf(pdf):
     pdf_reader = PdfReader(pdf)
@@ -26,12 +27,14 @@ def extract_text_from_pdf(pdf):
         text += page.extract_text()
     return text
 
+
 @st.cache_data
 def split_text(text):
     text_splitter = CharacterTextSplitter(
-            separator="\n", chunk_size=1000, chunk_overlap=200, length_function=len
-        )
+        separator="\n", chunk_size=1000, chunk_overlap=200, length_function=len
+    )
     return text_splitter.split_text(text)
+
 
 @st.cache_data
 def create_embeddings(text_chunks):
@@ -41,12 +44,13 @@ def create_embeddings(text_chunks):
 
 
 def user_input_section(knowledge_base, model, temp):
-    # user_question = st.text_input("Ask a question about your PDF:")
-    user_question = st.chat_input("Ask a question about your PDF:")
+    user_question = st.text_input("Ask a question about your PDF:")
+    # chat_input causes the app to refresh on new file upload for some reason
+    # user_question = st.chat_input("Ask a question about your PDF:")
 
     if user_question:
-        with st.chat_message("user"):
-            st.write(user_question)
+        # with st.chat_message("user"):
+        #     st.write(user_question)
 
         with st.spinner(""):
             docs = knowledge_base.similarity_search(user_question)
@@ -68,14 +72,21 @@ def user_input_section(knowledge_base, model, temp):
 
 
 def main():
+    if "current_pdf_name" not in st.session_state:
+        st.session_state["current_pdf_name"] = ""
+
     load_dotenv()
     st.header("Ask your PDF 💬")
 
     # upload file
     pdf = st.file_uploader("Upload your PDF", type="pdf")
 
-    # extract the text
     if pdf is not None:
+        if pdf.name != st.session_state["current_pdf_name"]:
+            print("clear cache")
+            st.session_state["current_pdf_name"] = pdf.name
+            st.cache_data.clear()
+
         text = extract_text_from_pdf(pdf)
 
         # split into chunks
